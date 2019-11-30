@@ -1,0 +1,50 @@
+<html>
+<body>
+<script>
+
+
+let arr=[1,2,[false,'hsj',12],[[3],[{x:100}]]];
+function reduction(arr,target=[]){
+	arr.forEach(function(e){
+		if(e instanceof Array){
+			reduction(e,target);
+		}
+		else{
+			target.push(e);
+		}
+	})
+	return target;
+}
+
+console.log(reduction(arr));
+
+function ACar(){
+	 this.lun = function (){
+		 console.log("Adddddddd23")
+	 }	
+}
+ACar.prototype.lunzi = function(){
+		console.log("A123")
+};
+ACar.prototype.aaa = 100;
+function BCar(color,price,fuel){
+	this.color = color;
+	this.price = price;
+	this.fuel = fuel;	
+
+}
+// BCar.prototype = ACar.prototype;//错误
+BCar.prototype=new ACar();
+//BCar.prototype=Object.create(ACar.prototype)
+let car1 = new BCar("black",1000,50);
+console.log(car1 instanceof ACar);
+console.log(car1);
+car1.lunzi();
+car1.lun();
+
+
+
+
+</script>
+</body>
+</html>

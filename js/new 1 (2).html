@@ -1,0 +1,75 @@
+<html>
+<body>
+<script>
+
+let year=Number (prompt("请输入年"));
+let month =Number (prompt("请输入月"));
+let day=Number (prompt("请输入天"));
+let a =0;
+if((year%4&&year%100)||year%400===0){
+	switch(month){
+		
+		case 12:
+		a+=30;
+		case 11:
+		a+=31;
+		 case 10:
+		a+=30;
+		 case 9:
+		a+=31;
+		 case 8:
+		a+=31;
+		 case 7:
+		a+=30;
+		 case 6:
+	    a+=31;
+		 case 5:
+	     a+=30;
+		 case 4:
+		a+=31;
+		 case 3:
+		a+=28;
+		 case 2:
+		a+=31;
+		case 1:
+		a+=0;
+	}
+	}
+	else{
+		switch(month){
+		case 12:
+		a+=30;
+		case 11:
+		a+=31;
+		 case 10:
+		a+=30;
+		 case 9:
+		a+=31;
+		 case 8:
+		a+=31;
+		 case 7:
+		a+=30;
+		 case 6:
+	    a+=31;
+		 case 5:
+	     a+=30;
+		 case 4:
+		a+=31;
+		 case 3:
+		a+=29;
+		 case 2:
+		a+=31;
+		case 1:
+		a+=0;
+	}
+	
+	
+}
+
+console.log(a+day);
+
+
+
+</script>
+</body>
+</html>

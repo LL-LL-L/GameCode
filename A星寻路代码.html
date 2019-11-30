@@ -1,0 +1,260 @@
+<html>
+<script>
+
+//定义一个地图模型(9 * 9)，○是空白●障碍 ☆起点 ★ 终点♣走的路径
+const MAP = [
+	['○','○','○','●','○','○','○','○','★'],
+	['○','○','○','●','○','○','○','○','○'],
+	['○','○','○','●','○','○','○','○','○'],
+	['○','○','○','○','○','○','○','○','○'],
+	['○','○','○','●','○','○','○','○','○'],
+	['○','○','○','●','○','○','○','○','○'],
+	['○','○','○','●','○','○','○','○','○'],
+	['○','○','○','●','○','○','○','○','○'],
+	['☆','○','○','●','○','○','○','○','○']
+]
+
+//结构赋值
+//let [a,b] = [10,30];
+
+//地图行列
+const [ROW,LINE] = [MAP.length,MAP[0].length];
+
+
+//起点终点定义
+const START = [8,0], END = [0,8];
+
+//方格的开启关闭的状态标签
+const [UNKNOWN,OPEN,CLOSE] = ["unknown","open","close"];
+
+//方格类型
+const [BLANK,BARRIER] = ["blank","barrier"];
+
+//代价计算规则
+const LINE_DISTANCE = 10;
+const DIAGONAL_DISTANCE = 14;
+
+//定义八个方向（合法邻居的位置之间的下标偏移量）
+
+const DIR = [[0,1],[0,-1],[1,0],[-1,0],[1,1],[-1,-1],[1,-1],[-1,1]];
+
+//计算曼哈顿距离方法
+function manhattan(index){
+	return ((Math.abs(index[0] - END[0])) + (Math.abs(index[1] - END[1]))) * 10
+}
+
+//越界检查
+function checkIndex(index,dir){
+	let target = [index[0] + dir[0],index[1] + dir[1]];
+	return target[0] >= 0 && target[0] <= ROW - 1 && target[1] >= 0 && target[1] <= LINE - 1;
+}
+
+let gridList = [];
+
+//单元格类
+class Grid{
+	constructor(index,type){
+		//当前方格在地图定位（下标）
+		this.index = index;
+		//方格类型
+		this.type = type;
+		//指向当前方格的方格的指针
+		this.par = null;
+		//已经消耗的代价，剩余代价，总消耗的代价
+		this.hasCost = 0;
+		this.remainCost = 0;
+		this.totalCost = 0;
+		//方格状态标签
+		this.state = UNKNOWN;
+		
+	}
+	//计算代价（当一个方格被放入我们的锅里（开放列表），
+	//也就是有一个父方格，才可以计算）
+	calcCost(){
+		//剩余代价
+		this.remainCost = manhattan(this.index);
+		//已消耗代价
+		let distance;
+		if((Math.abs(this.index[0] - this.par.index[0]) + Math.abs(this.index[1] - this.par.index[1])) === 1){
+			distance = LINE_DISTANCE;
+		}else{
+			distance = DIAGONAL_DISTANCE;
+		}
+		this.hasCost = this.par.hasCost + distance;
+		//总代价
+		this.totalCost = this.remainCost + this.hasCost;
+	}
+	//获取合法邻居
+	getNeighbor(){
+		let neighbor = [];
+		//满足必须是邻居的条件
+		for(let i = 0;i < DIR.length;i++){
+			let dir = DIR[i];
+			//越界判断
+			if(!checkIndex(this.index,dir)){
+				continue;
+			}
+			let target = [this.index[0] + dir[0],this.index[1] + dir[1]];
+			let node = gridList[target[0]][target[1]]
+			//挂角判断
+			if((Math.abs(dir[0]) === Math.abs(dir[1])) 
+			&& (gridList[this.index[0] + dir[0]][this.index[1]].type === BARRIER
+			||gridList[this.index[0]][this.index[1] + dir[1]].type === BARRIER)){
+				continue;
+			}
+			//障碍物判断
+			if(node.type === BARRIER){
+				continue;
+			}
+			if(node.state === CLOSE){
+				continue;
+			}
+			//排除以上情况，剩余能走的对象，就是合法邻居，压入数组
+			neighbor.push(node);
+		}
+		return neighbor;
+	}
+	
+	
+}
+
+//数据初始化
+function init(){
+	for(let i = 0;i < ROW;i++){
+		gridList[i] = [];
+		for(let j = 0;j < LINE;j++){
+			let type = (MAP[i][j] === '●') ? BARRIER : BLANK;
+			let grid = new Grid([i,j],type);
+			gridList[i][j] = grid;
+		}
+	}
+}
+//寻路模块。核心逻辑
+function Astar(){
+	let path = [];
+	//获取起点方格
+	let start = gridList[START[0]][START[1]];
+	//获取终点
+	let end = gridList[END[0]][END[1]];
+	//将起点放入锅里（容器）
+	let openList = [start];
+	//当前搜索的方格
+	let curStep = start;
+	//开始寻路
+	search();
+	function search(){
+		//第一步 找出当前方格的所有合法邻居
+		let neighbor = curStep.getNeighbor();
+		//判断找到的合法邻居中有没有终点
+		let index = neighbor.indexOf(end);
+		if(index > -1){
+			//找到了终点，准备绘制路径
+			end.par = curStep;
+			curStep = end;
+			drawPath();
+			return;
+		}else{
+			for(let i = 0;i < neighbor.length;i++){
+				if(neighbor[i].state === OPEN){
+					//计算并对比代价,来决定跟着之前的父方格混，还是跟着当前的父方格混
+					/*
+					1.如果一个方格已经在开放列表里面，说明它已经是某个路径的组成部分
+					2.同时说明这个方格已经有了父方格
+					3.由于现在又遇见了这个方格，也就是说这个方格至少是2个路径的交点
+					4.但是路径只有一条
+					5.所有说需要这个方格现在做出选择，决定自己属于哪个路径
+					6.做决定的关键在于：加入那条路径消耗的代价更少
+					7.为了说服他，我们就向它演示两条路上对应的代价是多少
+					8.让它自己对比结果之后做出最后决定
+					*/
+					let clone  = Object.create(neighbor[i]);
+					clone.par = curStep;
+					clone.calcCost();
+					if(clone.totalCost < neighbor[i].totalCost){
+						neighbor[i].par = curStep;
+						neighbor[i].calcCost();
+					}
+				}else{
+					//如果之前不再开放列表，就添加到开放列表
+					addNodeToOpenList(neighbor[i],curStep);
+				}
+			}
+		}
+		//将当前的方格关闭
+		removeNodeFromOpenList(curStep);
+		//决定下一步走哪里
+		//按照总代价的大小，取最小的
+		if(openList.length > 0){
+			openList.sort(function(a,b){return a.totalCost - b.totalCost});
+			curStep = openList[0];
+			//递归调用
+			search();
+		}else{
+			alert("寻路失败")
+		}
+	}
+	
+	//添加节点
+	function addNodeToOpenList(node,par){
+		//指定他的上一个
+		node.par = par;
+		//计算代价
+		node.calcCost();
+		//更新开启或关闭的状态
+		node.state = OPEN;
+		//放入开放列表
+		openList.push(node);
+	}
+	
+	//从开放列表中删除节点
+	function removeNodeFromOpenList(node){
+		let index = openList.indexOf(node);
+		node.state = CLOSE;
+		openList.splice(index,1);
+	}
+	function drawPath(){
+		let p = end.par;
+		while(p){
+			path.unshift(p.index);
+			p = p.par;
+		}
+	}
+	return path;
+}
+
+//显示路径
+function showPath(){
+	document.write(path.join("->"));
+	if(confirm("路径搜索成功，是否展示行进动画")){
+		go(path);
+	}
+}
+//行进动画展示
+function go(path){
+	let step = path.shift();
+	MAP[step[0]][step[1]] = "♣"
+	console.clear();
+	console.log(MAP.join("\n").replace(/,/g,""))
+	setTimeout(function(){
+		if(path.length > 0)
+			go(path);
+	},1500)
+}
+
+
+init();
+let path = Astar();
+console.log(path);
+if(path.length > 0){
+	showPath()
+}
+
+
+
+
+
+
+
+
+</script>
+</html>

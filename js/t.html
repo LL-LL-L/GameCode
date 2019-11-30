@@ -1,0 +1,149 @@
+<html>
+<body>
+<script>
+
+
+//1.
+for(let a=1;a<10;a++){
+	for(let b=1;b<=a;b++){
+		document.write(a,"*",b,"=",(a*b),'&nbsp');
+	}
+	document.write('</br>');
+}
+
+//2.
+
+ function f(){
+	let temp;
+	
+//16801
+for(let i=0;i<99999;i++){
+	temp=i;
+	for(let t=0;t<5;t++){		
+		temp=((temp-1)/7);
+		temp=temp*6;
+	}
+	if(temp.toString().length<7){
+		console.log(temp);
+		for(let t=0;t<5;t++){	
+		temp=temp/6;
+		temp=temp*7+1;
+		}
+	    console.log(temp);
+		break;
+	}
+
+}
+}
+		
+
+
+f(); 
+
+//3.
+ let arr=[0,1];
+for(let i=2;i<20;i++){
+	if(i%2==0){
+		arr.push(parseInt(arr[i-2]+arr[i-1]));
+	}
+	else{
+		arr.push(parseInt(Math.abs(arr[i-2]-arr[i-1])));
+	}
+}
+console.log(arr); 
+//4.
+
+ for(let n=1;n<1000;n++){
+	let temp1=n.toString();
+	let temp2=(n**2).toString();
+	if(temp2.lastIndexOf(temp1)==temp2.length-temp1.length){
+			console.log(n);
+	}	
+ }  
+//5.
+ let brr=[];
+for(let q=0;q<30;q++)
+{
+	brr[q]=parseInt(Math.random()*5+1);
+}
+console.log(brr);
+brr.toString();
+let cc={};
+
+for(let q=0;q<brr.length;q++){
+	if(cc.hasOwnProperty(brr[q]+''))
+	{
+		cc[brr[q]+'']=1+parseInt(cc[brr[q]+'']);
+	}
+	else{
+	    cc[brr[q]+'']=1;
+	}
+}
+console.log(cc);
+/* let obj1 = {
+	1:"234",
+	0:"abc",	
+}
+console.log(obj1); */
+//6.
+let ct={
+	x:100,
+	y:200
+}
+let tb=ct;
+console.log(tb);
+let ct_arr=Object.keys(ct);
+let at={};
+for(let i=0;i<ct_arr.length;i++){
+	at[ct_arr[i]]=ct[ct_arr[i]];
+}
+console.log(at);
+let et={};
+for(let key in ct){
+	et[key]=ct[key];
+}
+console.log(et);
+
+
+
+//7.
+let hh=[213231,123123,1313,[1231723,123123],12132,[123,1231],1];
+let rr=hh.toString();
+console.log(rr);
+let yy=rr.split(',');
+let temp=0;
+for(let i=0;i<yy.length;i++){
+	temp=Math.max(temp,parseInt(yy[i]))
+}
+console.log(temp);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</script>
+</body>
+</html>
+
+
+
+
+
+
